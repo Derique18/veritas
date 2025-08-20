@@ -408,47 +408,189 @@ Focus on completing Module 1 first, then come back to these.
 Each TODO section will be explained in detail in the STUDENT-GUIDE.md
 */
 
+// Helper: compute percentage safely
+function getOptionPercentage(option) {
+    const total = calculateTotalVotes();
+    if (total === 0) return 0;
+    return Math.round((option.votes / total) * 100);
+}
+
 // TODO 2.1: Complete the createVotingOptionElement function (Module 2)
 function createVotingOptionElement(option, index) {
-    // STUDENT TASK (Module 2): Create HTML elements for voting options
-    // This function will be completed in Module 2
-    
-    console.log('📝 TODO: Complete this function in Module 2');
-    console.log('📖 See STUDENT-GUIDE.md Module 2 for instructions');
-    
-    // Placeholder return to prevent errors
-    const placeholder = document.createElement('div');
-    placeholder.textContent = 'TODO: Complete in Module 2';
-    placeholder.style.padding = '20px';
-    placeholder.style.border = '2px dashed #ccc';
-    placeholder.style.margin = '10px';
-    placeholder.style.textAlign = 'center';
-    return placeholder;
+    // Create the outer card
+    const card = document.createElement('div');
+    card.className = 'option-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-pressed', 'false');
+    card.dataset.optionId = String(option.id);
+
+    // Inner content
+    const nameEl = document.createElement('div');
+    nameEl.className = 'option-name';
+    nameEl.textContent = option.name;
+
+    const votesEl = document.createElement('div');
+    votesEl.className = 'option-votes';
+    votesEl.textContent = `${option.votes} vote${option.votes === 1 ? '' : 's'}`;
+
+    const percentEl = document.createElement('div');
+    percentEl.className = 'option-percent';
+    percentEl.textContent = `${getOptionPercentage(option)}%`;
+
+    // Progress bar wrapper
+    const barWrap = document.createElement('div');
+    barWrap.className = 'option-progress';
+    const bar = document.createElement('div');
+    bar.className = 'option-progress-bar';
+    bar.style.width = `${getOptionPercentage(option)}%`;
+    barWrap.appendChild(bar);
+
+    // Assemble
+    const topRow = document.createElement('div');
+    topRow.className = 'option-top';
+    topRow.appendChild(nameEl);
+    topRow.appendChild(percentEl);
+
+    const bottomRow = document.createElement('div');
+    bottomRow.className = 'option-bottom';
+    bottomRow.appendChild(votesEl);
+
+    card.appendChild(topRow);
+    card.appendChild(barWrap);
+    card.appendChild(bottomRow);
+
+    // Disabled state if user already voted
+    if (AppState.hasUserVoted) {
+        card.classList.add('disabled');
+        card.setAttribute('aria-disabled', 'true');
+    }
+
+    // Click/keyboard handlers
+    const choose = () => {
+        if (AppState.hasUserVoted) {
+            showErrorMessage('You have already voted.');
+            return;
+        }
+        selectVotingOption(option.id);
+    };
+    card.addEventListener('click', choose);
+    card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            choose();
+        }
+    });
+
+    return card;
 }
 
 // TODO 2.2: Complete the createVotingOptions function (Module 2)
 function createVotingOptions() {
-    // STUDENT TASK (Module 2): Generate all voting option elements
-    console.log('📝 TODO: Complete this function in Module 2');
-    
-    // Placeholder implementation
     const container = document.getElementById('voting-options');
-    if (container) {
-        container.innerHTML = '<p style="text-align: center; padding: 20px;">📚 Complete Module 2 to see voting options here!</p>';
+    if (!container) return;
+
+    // Clear & (re)render all options
+    container.innerHTML = '';
+
+    if (!Array.isArray(AppState.pollOptions) || AppState.pollOptions.length === 0) {
+        const p = document.createElement('p');
+        p.style.textAlign = 'center';
+        p.style.padding = '20px';
+        p.textContent = 'No options available.';
+        container.appendChild(p);
+        return;
     }
+
+    AppState.pollOptions.forEach((option, idx) => {
+        const el = createVotingOptionElement(option, idx);
+        container.appendChild(el);
+    });
+
+    // Set poll status text
+    const pollStatus = document.getElementById('poll-status');
+    if (pollStatus) {
+        pollStatus.textContent = AppState.hasUserVoted ? 'Closed for you' : 'Open';
+    }
+
+    // Ensure totals & visual state are synced
+    updateTotalVotesDisplay();
+    updateVotingOptionsDisplay();
+
+    // Hide selection panel until a choice is made
+    const selPanel = document.getElementById('selected-option');
+    if (selPanel) selPanel.style.display = AppState.selectedOption !== null ? 'block' : 'none';
 }
 
 // TODO 2.3: Complete the selectVotingOption function (Module 2)
 function selectVotingOption(optionId) {
-    // STUDENT TASK (Module 2): Handle voting option selection
-    console.log('📝 TODO: Complete this function in Module 2');
-    console.log('🎯 Option selected:', optionId);
+    if (AppState.hasUserVoted) {
+        showErrorMessage('You have already voted.');
+        return;
+    }
+
+    const chosen = AppState.pollOptions.find(o => o.id === optionId);
+    if (!chosen) {
+        showErrorMessage('Invalid option selected.');
+        return;
+    }
+
+    AppState.selectedOption = optionId;
+
+    // Reveal the submit area with the chosen text
+    const selPanel = document.getElementById('selected-option');
+    const choiceText = document.getElementById('selected-choice');
+    if (selPanel) selPanel.style.display = 'block';
+    if (choiceText) choiceText.textContent = chosen.name;
+
+    // Update highlight
+    updateVotingOptionsDisplay();
+
+    console.log('🎯 Option selected:', optionId, chosen.name);
 }
 
 // TODO 2.4: Complete the updateVotingOptionsDisplay function (Module 2)
 function updateVotingOptionsDisplay() {
-    // STUDENT TASK (Module 2): Update visual state of voting options
-    console.log('📝 TODO: Complete this function in Module 2');
+    const container = document.getElementById('voting-options');
+    if (!container) return;
+
+    const cards = container.querySelectorAll('.option-card');
+    cards.forEach((card) => {
+        const oid = Number(card.dataset.optionId);
+        const isSelected = AppState.selectedOption === oid;
+
+        // Toggle selected styling and aria state
+        card.classList.toggle('selected', isSelected);
+        card.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+
+        // Refresh dynamic bits (votes & percent & progress)
+        const option = AppState.pollOptions.find(o => o.id === oid);
+        if (option) {
+            const votesEl = card.querySelector('.option-votes');
+            const percentEl = card.querySelector('.option-percent');
+            const bar = card.querySelector('.option-progress-bar');
+            if (votesEl) votesEl.textContent = `${option.votes} vote${option.votes === 1 ? '' : 's'}`;
+            const pct = getOptionPercentage(option);
+            if (percentEl) percentEl.textContent = `${pct}%`;
+            if (bar) bar.style.width = `${pct}%`;
+        }
+
+        // Lock/disable if user has voted
+        if (AppState.hasUserVoted) {
+            card.classList.add('disabled');
+            card.setAttribute('aria-disabled', 'true');
+        } else {
+            card.classList.remove('disabled');
+            card.removeAttribute('aria-disabled');
+        }
+    });
+
+    // Also keep totals and status synced
+    updateTotalVotesDisplay();
+    const pollStatus = document.getElementById('poll-status');
+    if (pollStatus) {
+        pollStatus.textContent = AppState.hasUserVoted ? 'Closed for you' : 'Open';
+    }
 }
 
 // =============================================================================
