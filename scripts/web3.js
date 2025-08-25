@@ -37,55 +37,90 @@ LEARNING NOTE: Always check if required dependencies exist before using them.
 This prevents errors and provides better user experience.
 */
 
-/*
-🎯 EXERCISE 3.1: METAMASK DETECTION
-*/
+// TODO 3.1: Complete the detectMetaMask function
 function detectMetaMask() {
-    // ✅ Check if ethereum exists AND isMetaMask is true
-    return window.ethereum && window.ethereum.isMetaMask;
+    // STUDENT TASK: Check if MetaMask is available
+    // 1. Check if window.ethereum exists
+    // 2. Check if it's specifically MetaMask (window.ethereum.isMetaMask)
+    // 3. Return true if both conditions are met, false otherwise
+    
+    // HINT: Use the logical AND operator (&&)
+    // HINT: return window.ethereum && window.ethereum.isMetaMask;
+    
+    // 🚨 YOUR CODE STARTS HERE:
+    
+    
+    // 🚨 YOUR CODE ENDS HERE
 }
 
 /*
 🎯 EXERCISE 3.2: WALLET CONNECTION
+
+This is the core function that connects your app to MetaMask.
+It requests permission to access the user's accounts.
+
+LEARNING NOTE: This function is async because blockchain operations
+take time and we don't want to freeze the browser.
 */
+
+// TODO 3.2: Complete the connectWallet function
 async function connectWallet() {
     console.log('👛 Attempting to connect wallet...');
     
     try {
+        // STUDENT TASK: Connect to MetaMask
+        // 1. Check if MetaMask is detected
+        // 2. Request account access using eth_requestAccounts
+        // 3. Get the connected account
+        // 4. Update AppState with connection info
+        // 5. Call handleWalletConnection with the account
+        // 6. Check and handle network
+        
         // STEP 1: Check MetaMask availability
         if (!detectMetaMask()) {
             throw new Error('MetaMask not detected. Please install MetaMask extension.');
         }
-
+        
         // STEP 2: Request account access
-        const accounts = await window.ethereum.request({
-            method: 'eth_requestAccounts'
-        });
-
+        // HINT: const accounts = await window.ethereum.request({
+        //           method: 'eth_requestAccounts'
+        //       });
+        
+        // 🚨 YOUR CODE STARTS HERE:
+        
+        
+        // 🚨 YOUR CODE ENDS HERE
+        
         // STEP 3: Validate we got accounts
         if (!accounts || accounts.length === 0) {
             throw new Error('No accounts found. Please check MetaMask.');
         }
-
+        
         // STEP 4: Get the first account
         const account = accounts[0];
         console.log('✅ Wallet connected:', account);
-
+        
         // STEP 5: Update application state
-        AppState.isWalletConnected = true;
-        AppState.currentAccount = account;
-
+        // HINT: AppState.isWalletConnected = true;
+        // HINT: AppState.currentAccount = account;
+        
+        // 🚨 YOUR CODE STARTS HERE:
+        
+        
+        // 🚨 YOUR CODE ENDS HERE
+        
         // STEP 6: Handle successful connection
         handleWalletConnection(account);
-
+        
         // STEP 7: Check network
         await checkNetwork();
-
+        
         return account;
         
     } catch (error) {
         console.error('❌ Wallet connection failed:', error);
         
+        // Handle specific error types
         if (error.code === 4001) {
             showErrorMessage('Connection rejected. Please approve the connection in MetaMask.');
         } else if (error.code === -32002) {
@@ -100,44 +135,88 @@ async function connectWallet() {
 
 /*
 🎯 EXERCISE 3.3: HANDLE SUCCESSFUL CONNECTION
+
+This function is called when wallet connection succeeds.
+It updates the UI and prepares the app for blockchain interactions.
 */
+
+// TODO 3.3: Complete the handleWalletConnection function
 function handleWalletConnection(account) {
     console.log('🎉 Handling successful wallet connection for:', account);
-
+    
+    // STUDENT TASK: Handle successful wallet connection
+    // 1. Update the wallet display in the UI
+    // 2. Check user's voting status
+    // 3. Show success message
+    // 4. Enable voting functionality
+    
     // STEP 1: Update wallet display
-    updateWalletDisplay();
-
+    // HINT: Call updateWalletDisplay() function
+    
+    // 🚨 YOUR CODE STARTS HERE:
+    
+    
+    // 🚨 YOUR CODE ENDS HERE
+    
     // STEP 2: Check voting status
-    checkUserVotingStatus();
-
+    // HINT: Call checkUserVotingStatus() function
+    
+    // 🚨 YOUR CODE STARTS HERE:
+    
+    
+    // 🚨 YOUR CODE ENDS HERE
+    
     // STEP 3: Show success message
-    showSuccessMessage('Wallet connected successfully!');
-
+    // HINT: showSuccessMessage('Wallet connected successfully!');
+    
+    // 🚨 YOUR CODE STARTS HERE:
+    
+    
+    // 🚨 YOUR CODE ENDS HERE
+    
     console.log('✅ Wallet connection handling complete');
 }
 
 /*
 🎯 EXERCISE 3.4: NETWORK MANAGEMENT
+
+Blockchain apps need to work on specific networks. This function
+checks if the user is on the correct network (Sepolia testnet).
 */
+
+// TODO 3.4: Complete the checkNetwork function
 async function checkNetwork() {
     try {
         console.log('🌐 Checking network...');
-
+        
+        // STUDENT TASK: Check and manage network
+        // 1. Get current network ID
+        // 2. Check if it matches Sepolia testnet (0xaa36a7)
+        // 3. If wrong network, prompt user to switch
+        // 4. Update AppState with network info
+        
         // STEP 1: Get current network
-        const chainId = await window.ethereum.request({
-            method: 'eth_chainId'
-        });
-
+        // HINT: const chainId = await window.ethereum.request({
+        //           method: 'eth_chainId'
+        //       });
+        
+        // 🚨 YOUR CODE STARTS HERE:
+        
+        
+        // 🚨 YOUR CODE ENDS HERE
+        
         console.log('Current network ID:', chainId);
-
+        
         // STEP 2: Check if correct network
         const sepoliaChainId = '0xaa36a7';
-
+        
         if (chainId === sepoliaChainId) {
+            // Correct network
             AppState.currentNetwork = 'Sepolia Testnet';
             console.log('✅ Connected to Sepolia testnet');
             return true;
         } else {
+            // Wrong network - prompt to switch
             console.log('⚠️ Wrong network detected');
             
             const shouldSwitch = confirm(
@@ -152,6 +231,7 @@ async function checkNetwork() {
                 return false;
             }
         }
+        
     } catch (error) {
         console.error('❌ Network check failed:', error);
         showErrorMessage('Failed to check network. Please try again.');
@@ -161,24 +241,40 @@ async function checkNetwork() {
 
 /*
 🎯 EXERCISE 3.5: NETWORK SWITCHING
+
+This function helps users switch to the correct network automatically.
 */
+
+// TODO 3.5: Complete the switchToSepolia function
 async function switchToSepolia() {
     try {
         console.log('🔄 Switching to Sepolia testnet...');
-
+        
+        // STUDENT TASK: Switch to Sepolia network
+        // 1. Try to switch to Sepolia using wallet_switchEthereumChain
+        // 2. If network doesn't exist, add it using wallet_addEthereumChain
+        // 3. Update AppState on success
+        
         // STEP 1: Try to switch to existing network
-        await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0xaa36a7' }]
-        });
-
+        // HINT: await window.ethereum.request({
+        //           method: 'wallet_switchEthereumChain',
+        //           params: [{ chainId: '0xaa36a7' }]
+        //       });
+        
+        // 🚨 YOUR CODE STARTS HERE:
+        
+        
+        // 🚨 YOUR CODE ENDS HERE
+        
+        // If we get here, switch was successful
         AppState.currentNetwork = 'Sepolia Testnet';
         console.log('✅ Switched to Sepolia testnet');
         showSuccessMessage('Switched to Sepolia testnet successfully!');
         
     } catch (error) {
         console.error('❌ Network switch failed:', error);
-
+        
+        // If network doesn't exist, try to add it
         if (error.code === 4902) {
             try {
                 await addSepoliaNetwork();
@@ -194,26 +290,38 @@ async function switchToSepolia() {
 
 /*
 🎯 EXERCISE 3.6: ADD NETWORK
+
+This function adds the Sepolia testnet to MetaMask if it doesn't exist.
 */
+
+// TODO 3.6: Complete the addSepoliaNetwork function
 async function addSepoliaNetwork() {
     try {
         console.log('➕ Adding Sepolia network to MetaMask...');
-
-        await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-                chainId: '0xaa36a7',
-                chainName: 'Sepolia Testnet',
-                nativeCurrency: {
-                    name: 'Sepolia ETH',
-                    symbol: 'SEP',
-                    decimals: 18
-                },
-                rpcUrls: ['https://sepolia.infura.io/v3/'], 
-                blockExplorerUrls: ['https://sepolia.etherscan.io/']
-            }]
-        });
-
+        
+        // STUDENT TASK: Add Sepolia network to MetaMask
+        // Use wallet_addEthereumChain method with network parameters
+        
+        // HINT: await window.ethereum.request({
+        //           method: 'wallet_addEthereumChain',
+        //           params: [{
+        //               chainId: '0xaa36a7',
+        //               chainName: 'Sepolia Testnet',
+        //               nativeCurrency: {
+        //                   name: 'Sepolia ETH',
+        //                   symbol: 'SEP',
+        //                   decimals: 18
+        //               },
+        //               rpcUrls: ['https://sepolia.infura.io/v3/'],
+        //               blockExplorerUrls: ['https://sepolia.etherscan.io/']
+        //           }]
+        //       });
+        
+        // 🚨 YOUR CODE STARTS HERE:
+        
+        
+        // 🚨 YOUR CODE ENDS HERE
+        
         AppState.currentNetwork = 'Sepolia Testnet';
         console.log('✅ Sepolia network added successfully');
         showSuccessMessage('Sepolia testnet added to MetaMask!');
@@ -226,35 +334,66 @@ async function addSepoliaNetwork() {
 
 /*
 🎯 EXERCISE 3.7: UPDATE WALLET DISPLAY
-*/
-function updateWalletDisplay() {
-    console.log('🎨 Updating wallet display...');
 
+This function updates the UI to show wallet connection status.
+*/
+
+// TODO 3.7: Complete the updateWalletDisplay function
+function updateWalletDisplay() {
+    // STUDENT TASK: Update wallet UI elements
+    // 1. Find wallet-related DOM elements
+    // 2. Show/hide elements based on connection status
+    // 3. Update text content with wallet info
+    
+    console.log('🎨 Updating wallet display...');
+    
+    // Find UI elements
     const connectWalletBtn = document.getElementById('connect-wallet-btn');
     const walletInfo = document.getElementById('wallet-info');
     const walletAddress = document.getElementById('wallet-address');
     const networkInfo = document.getElementById('network-info');
-
+    
     if (AppState.isWalletConnected) {
         // STEP 1: Hide connect button, show wallet info
-        connectWalletBtn.style.display = 'none';
-        walletInfo.style.display = 'block';
-
+        // HINT: connectWalletBtn.style.display = 'none';
+        // HINT: walletInfo.style.display = 'block';
+        
+        // 🚨 YOUR CODE STARTS HERE:
+        
+        
+        // 🚨 YOUR CODE ENDS HERE
+        
         // STEP 2: Update wallet address display
         if (walletAddress) {
-            walletAddress.textContent = `Connected: ${formatWalletAddress(AppState.currentAccount)}`;
+            // HINT: walletAddress.textContent = `Connected: ${formatWalletAddress(AppState.currentAccount)}`;
+            
+            // 🚨 YOUR CODE STARTS HERE:
+            
+            
+            // 🚨 YOUR CODE ENDS HERE
         }
-
+        
         // STEP 3: Update network display
         if (networkInfo) {
-            networkInfo.textContent = `Network: ${AppState.currentNetwork || 'Unknown'}`;
+            // HINT: networkInfo.textContent = `Network: ${AppState.currentNetwork || 'Unknown'}`;
+            
+            // 🚨 YOUR CODE STARTS HERE:
+            
+            
+            // 🚨 YOUR CODE ENDS HERE
         }
+        
     } else {
         // STEP 4: Show connect button, hide wallet info
-        connectWalletBtn.style.display = 'flex';
-        walletInfo.style.display = 'none';
+        // HINT: connectWalletBtn.style.display = 'flex';
+        // HINT: walletInfo.style.display = 'none';
+        
+        // 🚨 YOUR CODE STARTS HERE:
+        
+        
+        // 🚨 YOUR CODE ENDS HERE
     }
-
+    
     console.log('✅ Wallet display updated');
 }
 
