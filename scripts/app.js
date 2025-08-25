@@ -532,17 +532,48 @@ function updateVotingOptionsDisplay() {
 // =============================================================================
 
 // TODO 3.1: Complete the connectWallet function (Module 3)
-function connectWallet() {
-    // STUDENT TASK (Module 3): Connect to MetaMask wallet
-    console.log('📝 TODO: Complete this function in Module 3');
-    showErrorMessage('Wallet connection will be implemented in Module 3');
+async function connectWallet() {
+    try {
+        if (typeof window.ethereum === "undefined" || !window.ethereum.isMetaMask) {
+            showErrorMessage("MetaMask not detected. Please install MetaMask extension.");
+            return;
+        }
+
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        AppState.isWalletConnected = true;
+        AppState.currentAccount = accounts[0];
+
+        const chainId = await window.ethereum.request({ method: "eth_chainId" });
+        AppState.currentNetwork = chainId;
+
+        updateWalletUI();
+        showSuccessMessage(`✅ MetaMask connected: ${accounts[0].substring(0, 6)}...${accounts[0].slice(-4)}`);
+    } catch (error) {
+        console.error("❌ MetaMask connection failed:", error);
+        showErrorMessage("Failed to connect MetaMask. Please try again.");
+    }
 }
+
+
 
 // TODO 3.2: Complete the handleWalletConnection function (Module 3)
 function handleWalletConnection(account) {
-    // STUDENT TASK (Module 3): Handle successful wallet connection
-    console.log('📝 TODO: Complete this function in Module 3');
+    if (!account) {
+        showErrorMessage("No account found. Please try connecting again.");
+        return;
+    }
+
+    // Update AppState
+    AppState.isWalletConnected = true;
+    AppState.currentAccount = account;
+
+    // Update the UI (button text, wallet info, etc.)
+    updateWalletUI();
+
+    // Show success message
+    showSuccessMessage(`✅ Wallet connected: ${account.substring(0, 6)}...${account.slice(-4)}`);
 }
+
 
 // =============================================================================
 // MODULE 4: BLOCKCHAIN TRANSACTIONS (TODO SECTIONS)
