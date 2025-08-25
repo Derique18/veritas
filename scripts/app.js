@@ -412,9 +412,7 @@ Each TODO section will be explained in detail in the STUDENT-GUIDE.md
 function createVotingOptionElement(option, index) {
     // STUDENT TASK (Module 2): Create HTML elements for voting options
     // This function will be completed in Module 2
-    
-    console.log('📝 TODO: Complete this function in Module 2');
-    console.log('📖 See STUDENT-GUIDE.md Module 2 for instructions');
+
     
     // Placeholder return to prevent errors
     const optionElement = document.createElement('div');
@@ -443,7 +441,7 @@ function createVotingOptionElement(option, index) {
 // TODO 2.2: Complete the createVotingOptions function (Module 2)
 function createVotingOptions() {
     // STUDENT TASK (Module 2): Generate all voting option elements
-    console.log('📝 TODO: Complete this function in Module 2');
+
     
     // Placeholder implementation
     const container = document.getElementById('voting-options');
@@ -460,7 +458,6 @@ function createVotingOptions() {
 // TODO 2.3: Complete the selectVotingOption function (Module 2)
 function selectVotingOption(optionId) {
     // STUDENT TASK (Module 2): Handle voting option selection
-    console.log('📝 TODO: Complete this function in Module 2');
     console.log('🎯 Option selected:', optionId);
     // Check if wallet is connected and user has not voted yet
  if (!AppState.isWalletConnected) {
@@ -496,8 +493,7 @@ function selectVotingOption(optionId) {
 // TODO 2.4: Complete the updateVotingOptionsDisplay function (Module 2)
 function updateVotingOptionsDisplay() {
     // STUDENT TASK (Module 2): Update visual state of voting options
-    console.log('📝 TODO: Complete this function in Module 2');
-       const totalVotes = AppState.options.reduce((sum, option) => sum + option.votes, 0);
+    const totalVotes = AppState.options.reduce((sum, option) => sum + option.votes, 0);
 
     AppState.pollOptions.forEach(option => {
         const optionEl = document.querySelector(`[data-option-id="${option.id}"]`);
