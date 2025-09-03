@@ -20,6 +20,15 @@ You'll complete these TODO sections in Modules 3 and 4.
 - Switch to Sepolia testnet
 - Get test ETH from faucet
 
+Organization:
+- Web3 setup and detection
+- Wallet Connection management
+- Network management and switching
+- Account management
+- Event listeners
+- Error and success handling
+
+
 =============================================================================
 */
 
@@ -49,8 +58,141 @@ function detectMetaMask() {
     
     // 🚨 YOUR CODE STARTS HERE:
     
-    
+    return typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask;
     // 🚨 YOUR CODE ENDS HERE
+}
+
+function getweb3Provider(){
+     if (!detectMetaMask()) {
+            return {
+                isAvailable: false,
+                provider: null,
+                isMetaMask: false,
+                message: 'MetaMask is not installed. please install MetaMask'
+            }
+    }
+
+    const isMetaMask= window.ethereum.isMetaMask;
+        return{
+            isAvailable: true,
+            provider: window.ethereum,
+            isMetaMask: isMetaMask,
+            message: isMetaMask ? 'MetaMask is installed' : 'Another ethereum provider is available'
+        }
+
+
+}
+
+async function getAccounts() {
+    console.log("requesting accounts")
+
+    try{
+        const account = await window.ethereum.request({method: 'eth_requestAccounts'})
+        return account;
+
+    }catch (error){
+        if (error.code===401){
+            throw new Error('User rejected the connection request')
+        } else{
+            throw new Error("Failed to get accounts: "+error.message)
+        }
+    }
+}
+
+function getNetworkName (chainId){
+    const networkName={
+        '0x1':'Ethereum Mainnet',
+        '0x3':'Ropsten Testnet',
+        '0x4':'Rinkeby Testnet',
+        '0x5':'Goerli Testnet',
+        '0x7':'Kovan Testnet',
+        '0xaa36a7':'Sepolia Testnet',
+        '0x89':'Polygon Mainnet',
+        '0x13881':'Mumbai Testnet'
+    };
+    return networkName(chainId)|| 'Unknown Network'
+}
+
+
+async function getCurrentNetwork(){
+    console.log("requesting network")
+
+    try{
+        const chainId=await window.ethereum.request({method: 'eth_chainId'})
+        
+        //convert chainId from hex to decimal
+        const chainIdDecimal=parseInt(chainId,16);
+
+        console.log(`Connected to network: ${networkName} (Chain ID: ${chainIdDecimal})`)
+
+        return{
+            chainId: chainId,
+            chainIdDecimal: chainIdDecimal,
+            networkName: networkName
+        }
+
+    } catch(error){
+        console.error("❌ Failed to get current network: ", error);
+        throw new Error("Failed to get current" + error.message)
+    }
+
+
+
+
+}
+
+async function getAccountBalance(address){
+    console.log("requesting balance for address");
+
+    //Request balance in wei
+    try{
+        const balanceWei = await window.ethereum.request({
+            method: "eth_getBalance",
+            params: [address, "latest"]
+        })
+
+        //convert wei to ether
+        //1 ETH = 10^18 wei / 1 ETH = 1000000000000000000 wei
+        //use ethers.js utility function to conert wei to ether
+
+        const balanceEth= parseInt(balanceWei,16)/Math.pow(10,18)
+        
+        return balanceEth.toFixed(4);
+    } catch(error){
+        console.error("❌ Failed to get account balance", error)
+        return "0.0000";
+    }
+}
+
+//Check if user has enough eth to complete transaction
+
+async function hasSufficientBalance(address){
+    const balance=await getAccountBalance(address);
+    const balanceNumber= parseFloat(balance);
+
+    //Minimum balance to vote is 0.01 ETH
+    const minimumBalance=0.01
+    const hasEnough=balanceNumber>=minimumBalance;
+
+    console.log("has enough balance:", hasEnough, `(${balanceNumber} ETH)`)
+    return hasEnough
+}
+
+
+function handleWalletConnection(account){
+    console.log("Wallet connected:", account);
+
+    //update the appstate
+    if (window.AppState){
+        window.AppState.isWalletConnected = true;
+        window.Appstate.currentAccount = account;
+    }
+
+    //check has already voted
+
+    if(typeof checkUserVotingStatus==='function'){
+        
+    }
 }
 
 /*
@@ -77,11 +219,10 @@ async function connectWallet() {
         // 6. Check and handle network
         
         // STEP 1: Check MetaMask availability
-        if (!detectMetaMask()) {
-            throw new Error('MetaMask not detected. Please install MetaMask extension.');
-        }
+        const providerInfo=getweb3Provider();
         
         // STEP 2: Request account access
+        const accounts=await getAccounts
         // HINT: const accounts = await window.ethereum.request({
         //           method: 'eth_requestAccounts'
         //       });
@@ -100,9 +241,17 @@ async function connectWallet() {
         const account = accounts[0];
         console.log('✅ Wallet connected:', account);
         
-        // STEP 5: Update application state
-        // HINT: AppState.isWalletConnected = true;
-        // HINT: AppState.currentAccount = account;
+        //get Network Info
+        const networkInfo=await getCurrentNetwork();
+
+
+        //update app state
+        if (window.AppState)
+    {
+        window.AppState.isWalletConnected=true;
+        window.Appstate.currentAccount=account;
+        window.Appstate.currentNetwork=networkInfo.networkName;
+    }
         
         // 🚨 YOUR CODE STARTS HERE:
         
